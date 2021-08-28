@@ -1,5 +1,4 @@
-
-" vim-bootstrap 
+" vim-bootstrap 2021-08-27 07:51:39
 
 "*****************************************************************************
 "" Vim-Plug core
@@ -11,14 +10,10 @@ else
   let curl_exists=expand('curl')
 endif
 
-let g:vim_bootstrap_langs = "go,html,javascript,python"
-let g:vim_bootstrap_editor = "nvim"				" nvim or vim
+let g:vim_bootstrap_langs = ""
+let g:vim_bootstrap_editor = "neovim"				" nvim or vim
 let g:vim_bootstrap_theme = "molokai"
-let g:vim_bootstrap_frams = "vuejs"
-
-
-" polglot_disabled should be defined before loading vim-polyglot
-let g:polyglot_disabled = ['python']
+let g:vim_bootstrap_frams = ""
 
 if !filereadable(vimplug_exists)
   if !executable(curl_exists)
@@ -53,7 +48,6 @@ Plug 'majutsushi/tagbar'
 Plug 'dense-analysis/ale'
 Plug 'Yggdroot/indentLine'
 Plug 'editor-bootstrap/vim-bootstrap-updater'
-Plug 'sheerun/vim-polyglot'
 Plug 'tpope/vim-rhubarb' " required by fugitive to :Gbrowse
 Plug 'tomasr/molokai'
 
@@ -81,34 +75,13 @@ Plug 'honza/vim-snippets'
 "*****************************************************************************
 "" Custom bundles
 "*****************************************************************************
-
-" go
-"" Go Lang Bundle
-Plug 'fatih/vim-go', {'do': ':GoInstallBinaries'}
-
-
-" html
-"" HTML Bundle
-Plug 'hail2u/vim-css3-syntax'
-Plug 'gko/vim-coloresque'
-Plug 'tpope/vim-haml'
-Plug 'mattn/emmet-vim'
-
-
-" javascript
-"" Javascript Bundle
-Plug 'jelera/vim-javascript-syntax'
-
-
-" python
-"" Python Bundle
-Plug 'davidhalter/jedi-vim'
-Plug 'raimon49/requirements.txt.vim', {'for': 'requirements'}
-
-
-" vuejs
-Plug 'posva/vim-vue'
-Plug 'leafOfTree/vim-vue-plugin'
+Plug 'neovim/nvim-lspconfig'
+Plug 'kabouzeid/nvim-lspinstall'
+Plug 'hrsh7th/nvim-cmp'
+Plug 'hrsh7th/cmp-nvim-lsp'
+Plug 'saadparwaiz1/cmp_luasnip'
+Plug 'L3MON4D3/LuaSnip'
+Plug 'folke/lsp-colors.nvim'
 
 "*****************************************************************************
 "*****************************************************************************
@@ -131,7 +104,7 @@ filetype plugin indent on
 set encoding=utf-8
 set fileencoding=utf-8
 set fileencodings=utf-8
-
+set ttyfast
 
 "" Fix backspace indent
 set backspace=indent,eol,start
@@ -177,6 +150,7 @@ set number
 
 let no_buffers_menu=1
 colorscheme molokai
+"
 
 
 set mousemodel=popup
@@ -199,15 +173,26 @@ else
   let g:indentLine_faster = 1
 
   
+  if $COLORTERM == 'gnome-terminal'
+    set term=gnome-256color
+  else
+    if $TERM == 'xterm'
+      set term=xterm-256color
+    endif
+  endif
+  
 endif
 
+
+if &term =~ '256color'
+  set t_ut=
+endif
 
 
 "" Disable the blinking cursor.
 set gcr=a:blinkon0
 
-au TermEnter * setlocal scrolloff=0
-au TermLeave * setlocal scrolloff=3
+set scrolloff=3
 
 
 "" Status bar
@@ -262,7 +247,7 @@ let g:NERDTreeSortOrder=['^__\.py$', '\/$', '*', '\.swp$', '\.bak$', '\~$']
 let g:NERDTreeShowBookmarks=1
 let g:nerdtree_tabs_focus_on_files=1
 let g:NERDTreeMapOpenInTabSilent = '<RightMouse>'
-let g:NERDTreeWinSize = 19
+let g:NERDTreeWinSize = 31
 set wildignore+=*/tmp/*,*.so,*.swp,*.zip,*.pyc,*.db,*.sqlite
 nnoremap <silent> <F2> :NERDTreeFind<CR>
 nnoremap <silent> <F3> :NERDTreeToggle<CR>
@@ -334,7 +319,7 @@ noremap <Leader>v :<C-u>vsplit<CR>
 
 "" Git
 noremap <Leader>ga :Gwrite<CR>
-noremap <Leader>gc :Gcommit<CR>
+noremap <Leader>gc :Git commit --verbose<CR>
 noremap <Leader>gsh :Gpush<CR>
 noremap <Leader>gll :Gpull<CR>
 noremap <Leader>gs :Gstatus<CR>
@@ -453,132 +438,6 @@ nnoremap <Leader>o :.Gbrowse<CR>
 "" Custom configs
 "*****************************************************************************
 
-" go
-" vim-go
-" run :GoBuild or :GoTestCompile based on the go file
-function! s:build_go_files()
-  let l:file = expand('%')
-  if l:file =~# '^\f\+_test\.go$'
-    call go#test#Test(0, 1)
-  elseif l:file =~# '^\f\+\.go$'
-    call go#cmd#Build(0)
-  endif
-endfunction
-
-let g:go_list_type = "quickfix"
-let g:go_fmt_command = "goimports"
-let g:go_fmt_fail_silently = 1
-
-let g:go_highlight_types = 1
-let g:go_highlight_fields = 1
-let g:go_highlight_functions = 1
-let g:go_highlight_methods = 1
-let g:go_highlight_operators = 1
-let g:go_highlight_build_constraints = 1
-let g:go_highlight_structs = 1
-let g:go_highlight_generate_tags = 1
-let g:go_highlight_space_tab_error = 0
-let g:go_highlight_array_whitespace_error = 0
-let g:go_highlight_trailing_whitespace_error = 0
-let g:go_highlight_extra_types = 1
-
-autocmd BufNewFile,BufRead *.go setlocal noexpandtab tabstop=4 shiftwidth=4 softtabstop=4
-
-augroup completion_preview_close
-  autocmd!
-  if v:version > 703 || v:version == 703 && has('patch598')
-    autocmd CompleteDone * if !&previewwindow && &completeopt =~ 'preview' | silent! pclose | endif
-  endif
-augroup END
-
-augroup go
-
-  au!
-  au Filetype go command! -bang A call go#alternate#Switch(<bang>0, 'edit')
-  au Filetype go command! -bang AV call go#alternate#Switch(<bang>0, 'vsplit')
-  au Filetype go command! -bang AS call go#alternate#Switch(<bang>0, 'split')
-  au Filetype go command! -bang AT call go#alternate#Switch(<bang>0, 'tabe')
-
-  au FileType go nmap <Leader>dd <Plug>(go-def-vertical)
-  au FileType go nmap <Leader>dv <Plug>(go-doc-vertical)
-  au FileType go nmap <Leader>db <Plug>(go-doc-browser)
-
-  au FileType go nmap <leader>r  <Plug>(go-run)
-  au FileType go nmap <leader>t  <Plug>(go-test)
-  au FileType go nmap <Leader>gt <Plug>(go-coverage-toggle)
-  au FileType go nmap <Leader>i <Plug>(go-INFO)
-  au FileType go nmap <silent> <Leader>l <Plug>(go-metalinter)
-  au FileType go nmap <C-g> :GoDecls<cr>
-  au FileType go nmap <leader>dr :GoDeclsDir<cr>
-  au FileType go imap <C-g> <esc>:<C-u>GoDecls<cr>
-  au FileType go imap <leader>dr <esc>:<C-u>GoDeclsDir<cr>
-  au FileType go nmap <leader>rb :<C-u>call <SID>build_go_files()<CR>
-  au filetype go inoremap <buffer> . .<C-x><C-o>
-
-augroup END
-
-" ale
-:call extend(g:ale_linters, {
-    \"go": ['golint', 'go vet'], })
-
-
-" html
-" for html files, 2 spaces
-autocmd Filetype html setlocal ts=2 sw=2 expandtab
-
-
-" javascript
-let g:javascript_enable_domhtmlcss = 1
-
-" vim-javascript
-augroup vimrc-javascript
-  autocmd!
-  autocmd FileType javascript setl tabstop=4|setl shiftwidth=4|setl expandtab softtabstop=4
-augroup END
-
-
-" python
-" vim-python
-augroup vimrc-python
-  autocmd!
-  autocmd FileType python setlocal expandtab shiftwidth=4 tabstop=8 colorcolumn=79
-      \ formatoptions+=croq softtabstop=4
-      \ cinwords=if,elif,else,for,while,try,except,finally,def,class,with
-augroup END
-
-" jedi-vim
-let g:jedi#smart_auto_mappings = 1
-let g:jedi#popup_on_dot = 1
-let g:jedi#goto_assignments_command = "<leader>g"
-let g:jedi#goto_definitions_command = "<leader>d"
-let g:jedi#documentation_command = "K"
-let g:jedi#usages_command = "<leader>n"
-let g:jedi#rename_command = "<leader>r"
-let g:jedi#show_call_signatures = "1"
-let g:jedi#completions_command = "<C-Space>"
-let g:jedi#smart_auto_mappings = 1
-let g:jedi#completions_enabled = 1
-
-" ale
-:call extend(g:ale_linters, {
-    \'python': ['flake8'], })
-
-" vim-airline
-let g:airline#extensions#virtualenv#enabled = 1
-
-" Syntax highlight
-" Default highlight is better than polyglot
-let g:polyglot_disabled = ['python']
-let python_highlight_all = 1
-
-
-
-" vuejs
-" vim vue
-let g:vue_disable_pre_processors=1
-" vim vue plugin
-let g:vim_vue_plugin_load_full_syntax = 1
-
 
 "*****************************************************************************
 "*****************************************************************************
@@ -628,5 +487,103 @@ else
   let g:airline_symbols.linenr = ''
 endif
 
-let g:python3_host_prog = '/usr/bin/python3'
-let g:loaded_python_provider=0
+
+lua << EOF
+local nvim_lsp = require('lspconfig')
+
+-- Use an on_attach function to only map the following keys
+-- after the language server attaches to the current buffer
+local on_attach = function(client, bufnr)
+  local function buf_set_keymap(...) vim.api.nvim_buf_set_keymap(bufnr, ...) end
+  local function buf_set_option(...) vim.api.nvim_buf_set_option(bufnr, ...) end
+
+  -- Enable completion triggered by <c-x><c-o>
+  buf_set_option('omnifunc', 'v:lua.vim.lsp.omnifunc')
+
+  -- Mappings.
+  local opts = { noremap=true, silent=true }
+
+  -- See `:help vim.lsp.*` for documentation on any of the below functions
+  buf_set_keymap('n', 'gD', '<cmd>lua vim.lsp.buf.declaration()<CR>', opts)
+  buf_set_keymap('n', 'gd', '<cmd>lua vim.lsp.buf.definition()<CR>', opts)
+  buf_set_keymap('n', 'K', '<cmd>lua vim.lsp.buf.hover()<CR>', opts)
+  buf_set_keymap('n', 'gi', '<cmd>lua vim.lsp.buf.implementation()<CR>', opts)
+  buf_set_keymap('n', '<C-k>', '<cmd>lua vim.lsp.buf.signature_help()<CR>', opts)
+  buf_set_keymap('n', '<space>wa', '<cmd>lua vim.lsp.buf.add_workspace_folder()<CR>', opts)
+  buf_set_keymap('n', '<space>wr', '<cmd>lua vim.lsp.buf.remove_workspace_folder()<CR>', opts)
+  buf_set_keymap('n', '<space>wl', '<cmd>lua print(vim.inspect(vim.lsp.buf.list_workspace_folders()))<CR>', opts)
+  buf_set_keymap('n', '<space>D', '<cmd>lua vim.lsp.buf.type_definition()<CR>', opts)
+  buf_set_keymap('n', '<space>rn', '<cmd>lua vim.lsp.buf.rename()<CR>', opts)
+  buf_set_keymap('n', '<space>ca', '<cmd>lua vim.lsp.buf.code_action()<CR>', opts)
+  buf_set_keymap('n', 'gr', '<cmd>lua vim.lsp.buf.references()<CR>', opts)
+  buf_set_keymap('n', '<space>e', '<cmd>lua vim.lsp.diagnostic.show_line_diagnostics()<CR>', opts)
+  buf_set_keymap('n', '[d', '<cmd>lua vim.lsp.diagnostic.goto_prev()<CR>', opts)
+  buf_set_keymap('n', ']d', '<cmd>lua vim.lsp.diagnostic.goto_next()<CR>', opts)
+  buf_set_keymap('n', '<space>q', '<cmd>lua vim.lsp.diagnostic.set_loclist()<CR>', opts)
+  buf_set_keymap('n', '<space>f', '<cmd>lua vim.lsp.buf.formatting()<CR>', opts)
+
+end
+
+-- Use a loop to conveniently call 'setup' on multiple servers and
+-- map buffer local keybindings when the language server attaches
+local servers = { 'terraformls', 'tflint', 'dockerls', 'gopls', 'pyright', 'yamlls', 'sqlls', 'vuels', 'jsonls', 'html', 'bashls', 'diagnosticls' }
+for _, lsp in ipairs(servers) do
+  nvim_lsp[lsp].setup {
+    on_attach = on_attach,
+    flags = {
+      debounce_text_changes = 150,
+    }
+  }
+end
+
+-- Set completeopt to have a better completion experience
+vim.o.completeopt = 'menuone,noselect'
+
+-- luasnip setup
+local luasnip = require 'luasnip'
+
+-- nvim-cmp setup
+local cmp = require 'cmp'
+cmp.setup {
+  snippet = {
+    expand = function(args)
+      require('luasnip').lsp_expand(args.body)
+    end,
+  },
+  mapping = {
+    ['<C-p>'] = cmp.mapping.select_prev_item(),
+    ['<C-n>'] = cmp.mapping.select_next_item(),
+    ['<C-d>'] = cmp.mapping.scroll_docs(-4),
+    ['<C-f>'] = cmp.mapping.scroll_docs(4),
+    ['<C-Space>'] = cmp.mapping.complete(),
+    ['<C-e>'] = cmp.mapping.close(),
+    ['<CR>'] = cmp.mapping.confirm {
+      behavior = cmp.ConfirmBehavior.Replace,
+      select = true,
+    },
+    ['<Tab>'] = function(fallback)
+      if vim.fn.pumvisible() == 1 then
+        vim.fn.feedkeys(vim.api.nvim_replace_termcodes('<C-n>', true, true, true), 'n')
+      elseif luasnip.expand_or_jumpable() then
+        vim.fn.feedkeys(vim.api.nvim_replace_termcodes('<Plug>luasnip-expand-or-jump', true, true, true), '')
+      else
+        fallback()
+      end
+    end,
+    ['<S-Tab>'] = function(fallback)
+      if vim.fn.pumvisible() == 1 then
+        vim.fn.feedkeys(vim.api.nvim_replace_termcodes('<C-p>', true, true, true), 'n')
+      elseif luasnip.jumpable(-1) then
+        vim.fn.feedkeys(vim.api.nvim_replace_termcodes('<Plug>luasnip-jump-prev', true, true, true), '')
+      else
+        fallback()
+      end
+    end,
+  },
+  sources = {
+    { name = 'nvim_lsp' },
+    { name = 'luasnip' },
+  },
+}
+
+EOF
