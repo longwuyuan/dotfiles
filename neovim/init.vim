@@ -544,9 +544,28 @@ for _, lsp in ipairs(servers) do
   }
 end
 
--- Other language-servers
-require'lspconfig'.terraformls.setup{}
-require'lspconfig'.yamlls.setup{}
+-- Other Langservers
+require'lspconfig'.terraformls.setup {
+    cmd = { "terraform-ls", "serve" },
+    filetypes = { "terraform", "tf", "tfvars" },
+--    root_dir = root_pattern(".terraform", ".git"),
+    on_attach = on_attach,
+}
+
+require'lspconfig'.yamlls.setup {
+    on_attach = on_attach,
+    settings = {
+        yaml = {
+            schemaStore = {
+                enable = true,
+                url = "file:///home/me/mystuff/myconfigs/vim/k8s.jsonschema/master-standalone-strict/all.json"
+            },
+            schemas = {
+                kubernetes = "/*.yaml"
+            }
+        }
+    },
+}
 
 
 -- Set completeopt to have a better completion experience
