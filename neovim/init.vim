@@ -1,4 +1,4 @@
-" vim-bootstrap 2021-08-27 07:51:39
+" vim-bootstrap 2021-08-28 17:55:02
 
 "*****************************************************************************
 "" Vim-Plug core
@@ -45,7 +45,7 @@ Plug 'vim-scripts/grep.vim'
 Plug 'vim-scripts/CSApprox'
 Plug 'Raimondi/delimitMate'
 Plug 'majutsushi/tagbar'
-Plug 'dense-analysis/ale'
+"Plug 'dense-analysis/ale'
 Plug 'Yggdroot/indentLine'
 Plug 'editor-bootstrap/vim-bootstrap-updater'
 Plug 'tpope/vim-rhubarb' " required by fugitive to :Gbrowse
@@ -81,7 +81,7 @@ Plug 'hrsh7th/nvim-cmp'
 Plug 'hrsh7th/cmp-nvim-lsp'
 Plug 'saadparwaiz1/cmp_luasnip'
 Plug 'L3MON4D3/LuaSnip'
-Plug 'folke/lsp-colors.nvim'
+Plug 'morhetz/gruvbox'
 
 "*****************************************************************************
 "*****************************************************************************
@@ -100,7 +100,7 @@ filetype plugin indent on
 "*****************************************************************************
 "" Basic Setup
 "*****************************************************************************"
-"" Encoding
+"G" Encoding
 set encoding=utf-8
 set fileencoding=utf-8
 set fileencodings=utf-8
@@ -149,8 +149,16 @@ set ruler
 set number
 
 let no_buffers_menu=1
-colorscheme molokai
-"
+"colorscheme molokai
+set tgc
+colorscheme gruvbox
+let g:gruvbox_contrast_dark = 'hard'
+if exists('+termguicolors')
+    let &t_8f = "\<Esc>[38;2;%lu;%lu;%lum"
+    let &t_8b = "\<Esc>[48;2;%lu;%lu;%lum"
+endif
+let g:gruvbox_invert_selection='0'
+set background=dark
 
 
 set mousemodel=popup
@@ -498,7 +506,7 @@ local on_attach = function(client, bufnr)
   local function buf_set_option(...) vim.api.nvim_buf_set_option(bufnr, ...) end
 
   -- Enable completion triggered by <c-x><c-o>
-  buf_set_option('omnifunc', 'v:lua.vim.lsp.omnifunc')
+  -- buf_set_option('omnifunc', 'v:lua.vim.lsp.omnifunc')
 
   -- Mappings.
   local opts = { noremap=true, silent=true }
@@ -526,7 +534,7 @@ end
 
 -- Use a loop to conveniently call 'setup' on multiple servers and
 -- map buffer local keybindings when the language server attaches
-local servers = { 'terraformls', 'tflint', 'dockerls', 'gopls', 'pyright', 'yamlls', 'sqlls', 'vuels', 'jsonls', 'html', 'bashls', 'diagnosticls' }
+local servers = { 'gopls', 'pyright', 'bashls', 'dockerls', 'html', 'jsonls' }
 for _, lsp in ipairs(servers) do
   nvim_lsp[lsp].setup {
     on_attach = on_attach,
@@ -535,6 +543,11 @@ for _, lsp in ipairs(servers) do
     }
   }
 end
+
+-- Other language-servers
+require'lspconfig'.terraformls.setup{}
+require'lspconfig'.yamlls.setup{}
+
 
 -- Set completeopt to have a better completion experience
 vim.o.completeopt = 'menuone,noselect'
@@ -585,5 +598,6 @@ cmp.setup {
     { name = 'luasnip' },
   },
 }
+
 
 EOF
