@@ -546,10 +546,10 @@ end
 
 -- Other Langservers
 require'lspconfig'.terraformls.setup {
-    cmd = { "terraform-ls", "serve" },
-    filetypes = { "terraform", "tf", "tfvars" },
---    root_dir = root_pattern(".terraform", ".git"),
     on_attach = on_attach,
+    cmd = { "terraform-ls", "serve" },
+    filetypes = { "tf" },
+--    root_dir = root_pattern(".terraform"),
 }
 
 require'lspconfig'.yamlls.setup {
@@ -558,7 +558,7 @@ require'lspconfig'.yamlls.setup {
         yaml = {
             schemaStore = {
                 enable = true,
-                url = "file:///home/me/mystuff/myconfigs/vim/k8s.jsonschema/master-standalone-strict/all.json"
+                url = "file:///home/me/k8s.jsonschema/master-standalone-strict/all.json"
             },
             schemas = {
                 kubernetes = "/*.yaml"
