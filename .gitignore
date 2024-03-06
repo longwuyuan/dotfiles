@@ -13,3 +13,12 @@
 
 # Dependency directories (remove the comment below to include it)
 # vendor/
+plugin
+custom
+spell
+ftplugin
+syntax
+coc-settings.json
+*luarc.json
+*lazy-lock.json
+after
