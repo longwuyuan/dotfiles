@@ -1,3 +1,4 @@
+# Lines configured by zsh-newuser-install
 HISTFILE=~/.histfile
 HISTSIZE=1000
 SAVEHIST=1000
@@ -5,18 +6,21 @@ setopt appendhistory autocd beep extendedglob nomatch notify
 bindkey -v
 # End of lines configured by zsh-newuser-install
 # The following lines were added by compinstall
-zstyle :compinstall filename '/Users/m/.zshrc'
+zstyle :compinstall filename '/home/me/.zshrc'
 
-autoload -Uz compinit
-compinit
-typeset -U PAH
-export -U PATH=$PATH:$HOME/bin:$HOME/.local/bin:$HOME/go/bin:/usr/local/sbin:~/.npm-global
+autoload -U bashcompinit && bashcompinit
+autoload -Uz compinit && compinit 
+# End of lines added by compinstall
+typeset -U PATH
+export -U PATH=$PATH:/usr/local/go/bin:$HOME/bin:$HOME/.local/bin:$HOME/go/bin:$HOME/.local/aws-cli/v2/current/bin:$HOME/.npm-global/bin:$HOME/.cargo/bin
+export FPATH=$FPATH:$HOME/.completions
 
-export EDITOR=nvim
+export EDITOR=vim
 
 # fzf
 [[ $- == *i* ]] && source "/home/me/.fzf/shell/completion.zsh" 2> /dev/null
-source "/usr/local/Cellar/fzf/0.32.0/shell/key-bindings.zsh"
+source "/usr/share/doc/fzf/examples/key-bindings.zsh"
+#source "/usr/share/fzf/shell/key-bindings.zsh"
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
 # git
@@ -27,45 +31,33 @@ setopt prompt_subst
 #RPROMPT=\$vcs_info_msg_0_
 #PROMPT=\$vcs_info_msg_0_'%# '
 zstyle ':vcs_info:git:*' formats '%b'
+zstyle ':completion:*:*:git:*' script   /usr/share/doc/git/contrib/completion/git-completion.zsh
 git config --global push.default simple
-git config --global user.name "LongWuYuan"
-git config --global user.email "longwuyuan@gmail.com"
 git config --global color.ui true
 
 # Prompt
 NEWLINE=$'\n'
-PROMPT='%n%"@%m [%~] %S'\$vcs_info_msg_0_'%s$NEWLINE%# '
+PROMPT='[%~] %S'\$vcs_info_msg_0_'%s$NEWLINE%# '
 
 # AWS Stuff
-autoload bashcompinit && bashcompinit
-autoload -Uz compinit && compinit
-complete -C '/usr/local/Cellar/awscli/2.6.1/bin/aws_completer' aws
+#source ~/.local/bin/aws_zsh_completer.sh
+#source ~/aws/dist/aws_completer
 
 # Kubernetes
-source <(kubectl completion zsh)
 alias k="kubectl"
 complete -F __start_kubectl k
-source <(helm completion zsh)
-source <(minikube completion zsh)
-source <(linkerd completion zsh)
-source <(argocd completion zsh)
-source <(kind completion zsh)
-source <(gh completion -s zsh)
 
-# GCP Stuff
-#source /usr/share/google-cloud-sdk/completion.zsh.inc
-
-# Aliases
-alias v=vi
-alias n=nvim
-
+# Golang stuff
 alias tb="nc termbin.com 9999"
-set -o vi
+export LIBVIRT_DEFAULT_URI='qemu:///system'
 
-# pnpm
-export PNPM_HOME="/Users/m/Library/pnpm"
-export PATH="$PNPM_HOME:$PATH"
-# pnpm end
+# awscli-v2 stuff
+complete -C '/usr/local/aws-cli/v2/current/bin/aws_completer' aws
 
-# Docker
-docker context use lima
+# The next line updates PATH for the Google Cloud SDK.
+if [ -f '/usr/share/google-cloud-sdk/path.zsh.inc' ]; then . '/usr/share/google-cloud-sdk/path.zsh.inc'; fi
+
+# The next line enables shell command completion for gcloud.
+if [ -f '/usr/share/google-cloud-sdk/completion.zsh.inc' ]; then . '/usr/share/google-cloud-sdk/completion.zsh.inc'; fi
+
+export NVIM_APPNAME=nvim-fatih-vimscript
