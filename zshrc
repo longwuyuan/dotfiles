@@ -12,15 +12,15 @@ autoload -U bashcompinit && bashcompinit
 autoload -Uz compinit && compinit 
 # End of lines added by compinstall
 typeset -U PATH
-export -U PATH=$PATH:/usr/local/go/bin:$HOME/bin:$HOME/.local/bin:$HOME/go/bin:$HOME/.local/aws-cli/v2/current/bin:$HOME/.npm-global/bin:$HOME/.cargo/bin
+export -U PATH=$PATH:$HOME/bin:$HOME/.local/bin:$HOME/go/bin:/usr/local/go/bin
 export FPATH=$FPATH:$HOME/.completions
 
 export EDITOR=vim
 
 # fzf
 [[ $- == *i* ]] && source "/home/me/.fzf/shell/completion.zsh" 2> /dev/null
-source "/usr/share/doc/fzf/examples/key-bindings.zsh"
-#source "/usr/share/fzf/shell/key-bindings.zsh"
+#source "/usr/share/doc/fzf/examples/key-bindings.zsh"
+source "/usr/share/fzf/shell/key-bindings.zsh"
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
 # git
@@ -37,7 +37,8 @@ git config --global color.ui true
 
 # Prompt
 NEWLINE=$'\n'
-PROMPT='[%~] %S'\$vcs_info_msg_0_'%s$NEWLINE%# '
+#PROMPT='[%~] %S'\$vcs_info_msg_0_'%s$NEWLINE%# '
+export PS1="%{$(tput setaf 34)%}[%{$(tput setaf 34)%}%n%{$(tput setaf 34)%}@%{$(tput setaf 40)%}%m]%{$(tput setaf 46 )%}(%2~)%{$(tput setaf 39)%} '\$vcs_info_msg_0_'%{$(tput sgr0)%}$NEWLINE%# "
 
 # AWS Stuff
 #source ~/.local/bin/aws_zsh_completer.sh
@@ -59,5 +60,3 @@ if [ -f '/usr/share/google-cloud-sdk/path.zsh.inc' ]; then . '/usr/share/google-
 
 # The next line enables shell command completion for gcloud.
 if [ -f '/usr/share/google-cloud-sdk/completion.zsh.inc' ]; then . '/usr/share/google-cloud-sdk/completion.zsh.inc'; fi
-
-export NVIM_APPNAME=nvim-fatih-vimscript
