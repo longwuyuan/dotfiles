@@ -1,0 +1,168 @@
+echo "# switch user to root"
+sudo su -
+
+set -x
+
+echo "# Configure UFW"
+cp  /media/me/LONGDATA/mystuff/myconfigs/before.rules /etc/ufw/before.rules
+cp  /media/me/LONGDATA/mystuff/myconfigs/before6.rules /etc/ufw/before6.rules
+mv /etc/ufw/applications.d/* /root
+update-rc.d ufw defaults
+ufw enable
+ufw reload
+systemctl enable ufw
+iptables -vnL | grep -i drop
+
+echo "# Stop crap services and disable them"
+systemctl disable avahi-daemon.service avahi-daemon.socket blueman-mechanism.service  cups.service cups.socket cups-browsed.service cups.path  mdmonitor-oneshot.timer nfs-client.target nfs-blkmap.service openvpn.service open-vm-tools.service remote-fs.target rpcbind.service rpcbind.socket remote-cryptsetup.target remote-veritysetup.target saned.socket unattended-upgrades.service virtualbox-guest-utils.service ModemManager.service 
+
+systemctl stop avahi-daemon.service avahi-daemon.socket blueman-mechanism.service  cups.service cups.socket cups-browsed.service cups.path  mdmonitor-oneshot.timer nfs-client.target nfs-blkmap.service openvpn.service open-vm-tools.service remote-fs.target rpcbind.service rpcbind.socket remote-cryptsetup.target remote-veritysetup.target saned.socket unattended-upgrades.service virtualbox-guest-utils.service ModemManager.service 
+
+echo "# Remove execute permission on crap"
+chmod -x /usr/libexec/gvfsd-{dav,dnssd,ftp,google,http,nfs,network,sftp,smb,smb-browse} 
+
+echo "# Disable ipv6 in Kernel"
+sed -i 's/quiet splash/ipv6.disable=1' /etc/default/grub
+update-grub2
+
+echo "# Configure sysctl to disable ipv6"
+sysctl -a 2>/dev/null | grep ipv6 | grep disable | sudo sed -e 's/= 0/= 1/g' >> /etc/sysctl.conf
+echo 'fs.inotify.max_user_watches=1048576' >> /etc/sysctl.conf
+echo 'fs.inotify.max_user_instances=512' >> /etc/sysctl.conf
+echo 'net.ipv4.conf.all.accept_redirects = 0' >> /etc/sysctl.conf                                                                
+echo 'net.ipv4.conf.all.secure_redirects = 0' >> /etc/sysctl.conf
+echo 'net.ipv4.conf.all.send_redirects = 0' >> /etc/sysctl.conf
+echo 'net.ipv4.icmp_echo_ignore_broadcasts = 1' >> /etc/sysctl.conf 
+sysctl -p
+
+echo "# Hardcode nameserver"
+rm -f /etc/resolv.conf
+echo "nameserver 1.1.1.1" > /etc/resolv.conf
+chattr +i /etc/resolv.conf
+
+echo "# Blacklist some crap modules"
+echo "blacklist bluetooth" >> /etc/modprobe.d/blacklist.conf
+echo "blacklist btusb" >> /etc/modprobe.d/blacklist.conf
+echo "blacklist bnep" >> /etc/modprobe.d/blacklist.conf
+echo "blacklist rfcomm" >> /etc/modprobe.d/blacklist.conf
+echo "blacklist iscsi" >> /etc/modprobe.d/blacklist.conf
+echo "blacklist nfs" >> /etc/modprobe.d/blacklist.conf
+
+echo "# Purge crap installs"
+apt purge -y firefox cups cups-browsed samba nfs-kernel-server spice-vdagent virtualbox-guest-utils-modified-init virtualbox-guest-utils nfs-common-modified-init* open-vm-tools
+
+echo "########################################"
+echo " Connect to internet now and press enter"
+read -n 1
+echo "# Are you sure you are connected to internet"
+read -n 1
+echo "# Strting post internet connection stuff"
+echo "########################################"
+
+echo "# Configure UFW"
+cp /media/me/LONGDATA/mystuff/myconfigs/before.rules /etc/ufw/before.rules
+cp /media/me/LONGDATA/mystuff/myconfigs/before6.rules /etc/ufw/before6.rules
+systemctl enable ufw
+systemctl start ufw
+rm /etc/ufw/applications.d/*
+ufw enable
+ufw reload
+iptables -vnL | grep -i drop
+
+# Docker install
+sudo apt remove $(dpkg --get-selections docker.io docker-compose docker-doc docker-buildx podman-docker containerd runc | cut -f1)
+# Add Docker's official GPG key:
+sudo apt update
+sudo apt install ca-certificates curl
+sudo install -m 0755 -d /etc/apt/keyrings
+sudo curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc
+sudo chmod a+r /etc/apt/keyrings/docker.asc
+
+# Add the repository to Apt sources:
+sudo tee /etc/apt/sources.list.d/docker.sources <<EOF
+Types: deb
+URIs: https://download.docker.com/linux/debian
+Suites: $(. /etc/os-release && echo "$VERSION_CODENAME")
+Components: stable
+Architectures: $(dpkg --print-architecture)
+Signed-By: /etc/apt/keyrings/docker.asc
+EOF
+
+sudo apt update
+
+echo "# Install work tools"
+sudo apt update -y && sudo apt install -y apparmor apparmor-notify apparmor-profiles apparmor-profiles-extra apparmor-utils apt-transport-https aria2 bc chrony curl docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin fd-find fprintd fzf git httperf httping ipcalc jq links links2 luarocks medusa mtr nethogs net-tools nmap postgresql-client powertop python3-pip python3-venv ripgrep silversearcher-ag tcpdump tmux tshark vim wget wireshark zsh zsh-syntax-highlighting && apt purge neovim
+
+usermod -s /usr/bin/zsh me
+usermod -aG docekr me
+
+echo "# Install go"
+sudo tar -C /usr/local -zxvf /media/me/LONGDATA/mystuff/go1.26.5.linux-amd64.tar.gz
+
+
+echo "# Update & upgrade os"
+apt update -y
+apt dist-upgrade
+
+echo "#########################################################"
+echo "Now Run postinstall commands as user (NOT as root)"
+echo "Switching to normal user"
+exit
+id
+echo `who am i`
+echo "#########################################################"
+
+echo "# Create symlinks to dotfiles"
+ln -s $HOME/mystuff/myconfigs/.completions
+ln -s $HOME/mystuff/myconfigs/.ssh
+ln -s $HOME/mystuff/myconfigs/.tmux.conf
+ln -s $HOME/mystuff/myconfigs/.zshrc
+ln -s $HOME/mystuff/myconfigs/.aws
+ln -s $HOME/mystuff/mybin/ bin
+
+
+echo "# Install homebrew"
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+echo "$ Install latest needed tools"
+brew install tor gcloud-cli azure-cli awscli kind tree-sitter-cli nodejs gh neovim kubectl helm argocd linkerd grype
+brew services start tor
+
+echo "# Install lazynvim"
+git clone https://github.com/LazyVim/starter ~/.config/nvim
+cp /med/me/LONGDATA/mystuff/myconigs/colorscheme.lua ~/.config/nvim/lua/plugins/.
+echo "# create go home"
+mkdir $HOME/go
+
+
+echo "# Fix EACCESS for npm-global"
+mkdir ~/.npm-global
+npm config set prefix '~/.npm-global'
+npm install -g neovim
+git config --global user.name longwuyuan
+git config --global user.email longwuyuan@gmail.com
+
+
+echo "# Install nerd font"
+mkdir .local/share/fonts
+cd .local/share/fonts
+unzip ~/mystuff/DroidSansMono.zip
+
+
+echo "# Add Flathub"
+flatpak -u remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+
+echo "# install flatpaks"
+flatpak install -u -y flathub org.jitsi.jitsi-meet io.gitlab.librewolf-community org.mozilla.Thunderbird com.brave.Browser com.getpostman.Postman 
+
+
+#echo "# Set flatpak librewolf as default.browser"
+xdg-mime default io.gitlab.librewolf-community.desktop x-scheme-handler/https x-scheme-handler/http
+xdg-settings set default-web-browser io.gitlab.librewolf-community.desktop
+
+
+echo "#install rust"
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+
+
+echo "# Postinstall completed"
